@@ -1,10 +1,21 @@
 const soap = require('strong-soap').soap;
+const fs = require('fs');
 const _ = require('lodash');
 const dates = require('./dates.js');
 const url = `https://www.wcc.nrcs.usda.gov/awdbWebService/services?WSDL`;
-const stations = ["302:OR:SNTL", "1141:CO:SNTL"];
+const { firebaseRef } = require('./firebase.js');
+// const stations = ["302:OR:SNTL", "1141:CO:SNTL"];  use these two stations for testing purposes;
 
 
+function getAllSnotelStations() {
+  return new Promise((resolve, reject) => {
+    firebaseRef.child('allStations').once('value').then((snap) => {
+      resolve(snap.val());
+    }).catch((e) => {
+      reject(e);
+    })
+  });
+}
 
 // Should return an array of objects with necessary info
 function getStationMetadata(client, stationTriplets) {
@@ -52,17 +63,48 @@ function mergeArrays(a1, a2) {
 }
 
 
+// getAllSnotelStations().then((res) => {
+//   const stations = res;
+//
+//   soap.createClient(url, {}, (err, client) => {
+//     getStationMetadata(client, stations).then((res) => {
+//       var stationMetadata = res;
+//       getData(client, stations).then((res) => {
+//         var stationArray = mergeArrays(stationMetadata, res);
+//         console.log(stationArray);
+//       }).catch((e) => {
+//         console.log(e);
+//       });
+//     }).catch((e) => {
+//       console.log(e);
+//     })
+//   });
+// }).catch((e) => {
+//   console.log(e);
+// });
 
-soap.createClient(url, {}, (err, client) => {
-  getStationMetadata(client, stations).then((res) => {
-    var stationMetadata = res;
-    getData(client, stations).then((res) => {
-      var stationArray = mergeArrays(stationMetadata, res);
-      console.log(stationArray);
-    }).catch((e) => {
-      console.log(e);
-    });
-  }).catch((e) => {
-    console.log(e);
-  })
+getAllSnotelStations().then((res) => {
+  console.log(res);
+}).catch((e) => {
+  console.log(e);
 });
+
+
+// getAllSnotelStations().then((res) => {
+//   const stations = res;
+//
+//   soap.createClient(url, {}, (err, client) => {
+//     getData(client, stations).then((res) => {
+//       console.log(res);
+//     }).catch((e) => {
+//       console.log(e);
+//     });
+//   });
+// }).catch((e) => {
+//   console.log(e);
+// });
+
+
+
+
+// Each station, with static metadata ready immediately
